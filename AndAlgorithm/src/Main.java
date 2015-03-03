@@ -18,6 +18,8 @@ import java.util.TreeMap;
 3. If C = {}, return… there are no relevant docs
 5. Look up each d ϵϵ C and return to the user
 avbksdv<bsdvøsdvbjhjhgkjj
+
+Test TEST
  
  
  */
