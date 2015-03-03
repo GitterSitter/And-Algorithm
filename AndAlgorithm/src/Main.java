@@ -17,6 +17,7 @@ import java.util.TreeMap;
 2. For each d ϵ C, if d ɇ It, C <- C – {d}
 3. If C = {}, return… there are no relevant docs
 5. Look up each d ϵϵ C and return to the user
+avbksdv<bsdvøsdvbjhjhg
  
  
  */
