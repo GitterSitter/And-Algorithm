@@ -9,123 +9,126 @@ import java.util.TreeMap;
  1. retrieve lexicon entry for t
  2. note ft and address of It (inverted list)
  2. Sort query terms by increasing ft
- 
- 3. Initialize candidate set C with It of the term with the smallest ft
-4. For each remaining t
 
-1. Read It
-2. For each d ϵ C, if d ɇ It, C <- C – {d}
-3. If C = {}, return… there are no relevant docs
-5. Look up each d ϵϵ C and return to the user
-avbksdv<bsdvøsdvbjhjhgkjj
 
-Test TEST
- 
- 
+
+ 3. Initialize candidate set C with It of the term with the smallest ft'
+ 4. For each remaining t
+
+ 1. Read It
+ 2. For each d ϵ C, if d ɇ It, C <- C – {d}
+ 3. If C = {}, return… there are no relevant docs
+ 5. Look up each d ϵϵ C and return to the user
+
+
  */
 public class Main {
 
-	
+	public static boolean[][] check;
 	
 	public static void main(String[] args) {
 		TreeMap<String, String[]> col = readFile();
-		
-		search(col,"Trond Andreas sexy");
-		
-	
+		System.out.println(search(col, "Trond Andreas"));
 	}
+
 	
-	public static String search(TreeMap<String, String[]> col, String searchParam){
-		
+	
+	public static String search(TreeMap<String, String[]> col,String searchParam) {
 		searchParam = searchParam.replaceAll("[^\\p{L}\\p{Nd}]+", " ");
 		searchParam = searchParam.toLowerCase();
 		String[] search = searchParam.split(" ");
-		
-		for (String string : search) {
-			System.out.println(string);
-		}
-		
-		TreeMap<Integer,String> docFreq = new TreeMap<Integer,String>();
-		
-		for(Entry<String,String[]> index : col.entrySet()){
+		TreeMap<Integer, String> docFreq = new TreeMap<Integer, String>();
+
+		 check = new boolean[col.size()-1][search.length];
+		 
+		 System.out.println(col.size());
+
+		// Documents
+		int d =0 ;
+	 for (Entry<String, String[]> index : col.entrySet()) {
 			String key = index.getKey();
 			String[] values = index.getValue();
+			d++;
 			
 			int freq = 0;
 			System.out.println(key);
-			for(String ind : values){
-				for(String param : search){
-					if(param.equals(ind)){
-						freq++;
-						System.out.println(param + " har " + freq);
-					}	
-				}
+			
+			for (String ind : values) {
 				
+				for (int i = 0; i<search.length;i++) {
+					if (search[i].equals(ind)) {
+						freq++;
+					check[d][i] = true;
+					System.out.println("doc "  + d + " " + i + " tern");
+					}
+					
+				}
+
 			}
-			 docFreq.put(freq,key);
+			
+			docFreq.put(freq, key);
+
+		}
+
+		for (Entry<Integer, String> entry : docFreq.entrySet()) {
+			Integer key = entry.getKey();
+			String val = entry.getValue();
+			System.out.println(key + " " + val);
+			
+			
+			for(int i =0;i<check.length;i++){
+				System.out.println(i);
+				for(int j= 0;j< check[i].length;j++){
+					System.out.print(check[i][j] + " ");
+			
+				}
+			}
 			
 		}
-		
-		
-		for(Entry<Integer, String> entry : docFreq.entrySet()){
-		Integer key = entry.getKey();
-		String val = entry.getValue();
-     //   System.out.println(key + " " + val);
-		}
-		
-		if(docFreq.containsKey(0)){
+
+		if (docFreq.containsKey(0)) {
 			return null;
-		}else
-		return docFreq.lastEntry().toString();
+		} else
+			return docFreq.lastEntry().toString();
 	}
 
-	
-	
-	
-	
-	
-	public static TreeMap<String, String[]> readFile(){
-		TreeMap<String,String[]> collection = new TreeMap<String,String[]>();
-		try{
-		
+	public static TreeMap<String, String[]> readFile() {
+		TreeMap<String, String[]> collection = new TreeMap<String, String[]>();
+		try {
+
 			File[] documents = getDocuments();
-			
-			for(File d : documents){
-	
-			Scanner scan = new Scanner(d);
-			String[] document = null;
-			String text = "";
-			String docName = "";
-			docName = d.getName();
-			while(scan.hasNextLine()){
-			text = text + " " + scan.nextLine();
-			
-			
-			
-		
+
+			for (File d : documents) {
+				Scanner scan = new Scanner(d);
+				String[] document = null;
+				String text = "";
+				String docName = "";
+				docName = d.getName();
+				while (scan.hasNextLine()) {
+					text = text + " " + scan.nextLine();
+
+				}
+
+				text = text.replaceAll("[^\\p{L}\\p{Nd}]+", " ");
+				text = text.toLowerCase();
+				document = text.split(" ");
+				collection.put(docName, document);
+
+			}
+
+		} catch (Exception e) {
 		}
 
-		    text = text.replaceAll("[^\\p{L}\\p{Nd}]+", " ");
-		    text = text.toLowerCase();
-			document = text.split(" ");
-			collection.put(docName,document);
-			
-			}
-			
-		}catch(Exception e){	
-		}
-		
 		return collection;
 	}
-	public static File[] getDocuments(){
-		File fil = new File("Files");
-		return fil.listFiles(new FilenameFilter() { 
-	         public boolean accept(File dir, String filename)
-	              { return filename.endsWith(".txt"); }
-	} );
-	}
-	
-	
-}
-	
 
+	public static File[] getDocuments() {
+		File fil = new File("Files");
+		return fil.listFiles(new FilenameFilter() {
+			public boolean accept(File dir, String filename) {
+				return filename.endsWith(".txt");
+			}
+		});
+	}
+
+}
