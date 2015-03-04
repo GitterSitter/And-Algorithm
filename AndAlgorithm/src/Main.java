@@ -134,7 +134,7 @@ public class Main {
 			}
 		});
 	}
-	
+	//sadfsdf
 	public static void printCheck(){
 		for(int i = 0;i < check.length;i++){
 			System.out.println("");
