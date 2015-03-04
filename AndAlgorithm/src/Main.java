@@ -1,7 +1,6 @@
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -23,23 +22,22 @@ import java.util.TreeMap;
  3. If C = {}, return… there are no relevant docs
  5. Look up each d ϵϵ C and return to the user
 
-
  */
 public class Main {
 
 	public static boolean[][] check;
+	public static HashMap<String, Integer> docFreq;
 
 	public static void main(String[] args) {
 		TreeMap<String, String[]> col = readFile();
-		search(col, "B");
+		System.out.println(search(col, "B"));
 
 	}
 
-	public static void search(TreeMap<String, String[]> col, String searchParam) {
+	public static ArrayList<String> search(TreeMap<String, String[]> col, String searchParam) {
 		searchParam = searchParam.replaceAll("[^\\p{L}\\p{Nd}]+", " ");
 		searchParam = searchParam.toLowerCase();
 		String[] search = searchParam.split(" ");
-		HashMap<String, Integer> docFreq;
 		docFreq = new HashMap<String, Integer>();
 		check = new boolean[col.size()][search.length];
 
@@ -48,14 +46,10 @@ public class Main {
 			String key = index.getKey();
 			String[] values = index.getValue();
 			int freq = 0;
-
 			for (String ind : values) {
 				for (int i = 0; i < search.length; i++) {
 					if (search[i].equals(ind)) {
 						freq++;
-						// System.out.println("document: " + key + " " +
-						// " Term: " + ind + " " + " search term: " +
-						// search[i]);
 						check[d][i] = true;
 
 					}
@@ -69,16 +63,11 @@ public class Main {
 				if (check[d][j] == false)
 					notIn = true;
 			}
-
 			if (notIn == false) {
 				docFreq.put(key, freq);
-
 			}
-
 			d++;
-
 		}
-
 
 		List<Integer> sortList = new ArrayList<Integer>(docFreq.values());
 		Collections.sort(sortList, new Comparator<Integer>() {
@@ -89,24 +78,23 @@ public class Main {
 		});
 
 		ArrayList<String> resultSet = new ArrayList<String>();
-		int tall =0;
-		while(!docFreq.isEmpty()){
-		Map.Entry<String,Integer> maxEntry = null;
-		for (Entry<String, Integer> entry : docFreq.entrySet()) {
-				 if (maxEntry == null || entry.getValue().compareTo(maxEntry.getValue()) > 0){
-					 maxEntry = entry;
-				    }
+		while (!docFreq.isEmpty()) {
+			Map.Entry<String, Integer> maxEntry = null;
+			for (Entry<String, Integer> entry : docFreq.entrySet()) {
+				if (maxEntry == null
+						|| entry.getValue().compareTo(maxEntry.getValue()) > 0) {
+					maxEntry = entry;
+				}
+			}
 
-		}
+			resultSet.add(maxEntry.getKey());
+			docFreq.remove(maxEntry.getKey());
 		
-		resultSet.add(maxEntry.getKey());
-		docFreq.remove(maxEntry.getKey());
-	
-		System.out.println(resultSet.get(tall++));
+		}
+			return resultSet;
 	}
 
-	}
-
+	@SuppressWarnings("resource")
 	public static TreeMap<String, String[]> readFile() {
 		TreeMap<String, String[]> collection = new TreeMap<String, String[]>();
 		try {
@@ -121,12 +109,10 @@ public class Main {
 					text = text + " " + scan.nextLine();
 
 				}
-
 				text = text.replaceAll("[^\\p{L}\\p{Nd}]+", " ");
 				text = text.toLowerCase();
 				document = text.split(" ");
 				collection.put(docName, document);
-
 			}
 
 		} catch (Exception e) {
