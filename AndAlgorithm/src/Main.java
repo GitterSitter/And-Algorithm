@@ -4,6 +4,8 @@ import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.TreeMap;
 
+import com.sun.org.apache.xalan.internal.xsltc.compiler.sym;
+
 /*
  For each query term t
  1. retrieve lexicon entry for t
@@ -28,7 +30,9 @@ public class Main {
 	
 	public static void main(String[] args) {
 		TreeMap<String, String[]> col = readFile();
-		System.out.println(search(col, "Trond Andreas"));
+		System.out.println(search(col, "Trond Andreas sexy"));
+		printCheck();
+		
 	}
 
 	
@@ -38,8 +42,9 @@ public class Main {
 		searchParam = searchParam.toLowerCase();
 		String[] search = searchParam.split(" ");
 		TreeMap<Integer, String> docFreq = new TreeMap<Integer, String>();
-
-		 check = new boolean[col.size()-1][search.length];
+		
+		
+		 check = new boolean[col.size()][search.length];
 		 
 		 System.out.println(col.size());
 
@@ -48,8 +53,6 @@ public class Main {
 	 for (Entry<String, String[]> index : col.entrySet()) {
 			String key = index.getKey();
 			String[] values = index.getValue();
-			d++;
-			
 			int freq = 0;
 			System.out.println(key);
 			
@@ -59,7 +62,7 @@ public class Main {
 					if (search[i].equals(ind)) {
 						freq++;
 					check[d][i] = true;
-					System.out.println("doc "  + d + " " + i + " tern");
+					System.out.println("doc "  + d + " " + i + " term");
 					}
 					
 				}
@@ -67,6 +70,7 @@ public class Main {
 			}
 			
 			docFreq.put(freq, key);
+			d++;
 
 		}
 
@@ -129,6 +133,16 @@ public class Main {
 				return filename.endsWith(".txt");
 			}
 		});
+	}
+	
+	public static void printCheck(){
+		for(int i = 0;i < check.length;i++){
+			System.out.println("");
+			System.out.print((i+1) +  " : ");
+			for(int j = 0; j< check[i].length;j++){
+				System.out.print(check[i][j] + " ");
+			}
+		}
 	}
 
 }
