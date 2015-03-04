@@ -23,6 +23,8 @@ import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import java.awt.SystemColor;
 
+//kommentar for oppdatering
+
 
 public class GUI {
 
