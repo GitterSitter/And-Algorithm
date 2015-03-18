@@ -1,5 +1,6 @@
 import java.awt.Color;
 import java.awt.EventQueue;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -14,25 +15,19 @@ import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.TreeMap;
 
-import javax.swing.GroupLayout;
-import javax.swing.GroupLayout.Alignment;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.LayoutStyle.ComponentPlacement;
-import java.awt.SystemColor;
 
 //kommentar for oppdatering
-
 
 public class GUI {
 
 	private JFrame frame;
 	private JTextField textField;
-	private JLabel lblSearch;
 	private JLabel lblResult;
-	
+
 	public static boolean[][] check;
 	public static HashMap<String, Integer> docFreq;
 
@@ -65,101 +60,108 @@ public class GUI {
 	private void initialize() {
 		frame = new JFrame();
 		frame.getContentPane().setBackground(Color.DARK_GRAY);
-		
-		
-		JTextArea textArea = new JTextArea();
+
+		final JTextArea textArea = new JTextArea();
+		textArea.setFont(new Font("Monospaced", Font.PLAIN, 18));
+		textArea.setBounds(70, 81, 221, 213);
 		textArea.setForeground(Color.WHITE);
 		textArea.setBackground(Color.DARK_GRAY);
 		textArea.setEditable(false);
 		textArea.setEnabled(false);
-		
-		lblSearch = new JLabel("Search");
-		lblSearch.setForeground(Color.WHITE);
-		
-		lblResult = new JLabel("Result");
+
+		lblResult = new JLabel("Results: ");
+		lblResult.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		lblResult.setBounds(125, 42, 119, 20);
 		lblResult.setForeground(Color.WHITE);
 		textField = new JTextField();
+		textField.setBounds(115, 11, 119, 20);
 		textField.setForeground(new Color(0, 0, 0));
 		textField.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				TreeMap<String, String[]> col = readFile();
 				String x = search(col, textField.getText()).toString();
-				x= x.replaceAll(",", "\n");
+				x = x.replaceAll(",", "\n");
 				textArea.setText(x);
-				
+
 			}
 		});
 		textField.setText("");
 		textField.setColumns(10);
-		GroupLayout groupLayout = new GroupLayout(frame.getContentPane());
-		groupLayout.setHorizontalGroup(
-			groupLayout.createParallelGroup(Alignment.LEADING)
-				.addGroup(groupLayout.createSequentialGroup()
-					.addGap(59)
-					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-						.addGroup(groupLayout.createSequentialGroup()
-							.addGap(18)
-							.addComponent(textArea, GroupLayout.PREFERRED_SIZE, 199, GroupLayout.PREFERRED_SIZE))
-						.addGroup(groupLayout.createSequentialGroup()
-							.addComponent(lblSearch)
-							.addGap(38)
-							.addComponent(textField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
-					.addContainerGap(54, Short.MAX_VALUE))
-				.addGroup(Alignment.TRAILING, groupLayout.createSequentialGroup()
-					.addContainerGap(155, Short.MAX_VALUE)
-					.addComponent(lblResult)
-					.addGap(145))
-		);
-		groupLayout.setVerticalGroup(
-			groupLayout.createParallelGroup(Alignment.LEADING)
-				.addGroup(groupLayout.createSequentialGroup()
-					.addContainerGap()
-					.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
-						.addComponent(textField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-						.addComponent(lblSearch))
-					.addGap(22)
-					.addComponent(lblResult)
-					.addPreferredGap(ComponentPlacement.RELATED)
-					.addComponent(textArea, GroupLayout.PREFERRED_SIZE, 161, GroupLayout.PREFERRED_SIZE)
-					.addContainerGap(28, Short.MAX_VALUE))
-		);
-		frame.getContentPane().setLayout(groupLayout);
-		frame.setBounds(100, 100, 346, 300);
+		frame.getContentPane().setLayout(null);
+		frame.getContentPane().add(textArea);
+		frame.getContentPane().add(textField);
+		frame.getContentPane().add(lblResult);
+		frame.setBounds(100, 100, 431, 458);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
-	public static ArrayList<String> search(TreeMap<String, String[]> col, String searchParam) {
+
+	public static ArrayList<String> search(TreeMap<String, String[]> col,
+			String searchParam) {
 		searchParam = searchParam.replaceAll("[^\\p{L}\\p{Nd}]+", " ");
 		searchParam = searchParam.toLowerCase();
 		String[] search = searchParam.split(" ");
 		docFreq = new HashMap<String, Integer>();
 		check = new boolean[col.size()][search.length];
-
+		double totalDoc = col.size();
 		int d = 0;
+		HashMap<String, Map<String, Integer>> doc = new HashMap<String, Map<String, Integer>>();
 		for (Entry<String, String[]> index : col.entrySet()) {
-			String key = index.getKey();
+			String document = index.getKey();
 			String[] values = index.getValue();
+			HashMap<String, Integer> tf = new HashMap<String, Integer>();
 			int freq = 0;
-			for (String ind : values) {
-				for (int i = 0; i < search.length; i++) {
-					if (search[i].equals(ind)) {
+		
+			for (int i = 0; i < search.length; i++) {
+				for (String word : values) {
+					if (search[i].equals(word)) {
 						freq++;
 						check[d][i] = true;
-
+					
 					}
+				}
+				
+				boolean notIn = false;
+				for(int j = 0; j < check[d].length;j++){
+					if (check[d][j] == false) {
+						notIn = true;
+					}
+				}
+				if (notIn == false) {
+					docFreq.put(document, freq);
+					tf.put(search[i], freq);
 
 				}
-
+				freq = 0;
 			}
-
-			boolean notIn = false;
-			for (int j = 0; j < check[d].length; j++) {
-				if (check[d][j] == false)
-					notIn = true;
-			}
-			if (notIn == false) {
-				docFreq.put(key, freq);
-			}
+			doc.put(document, tf);
 			d++;
+			
+		}
+
+		double ni = 0;
+		for (Entry<String, Map<String, Integer>> entry : doc.entrySet()) {
+			
+			int tall=0;
+			int[] tallet = new int[search.length];
+			for (Entry<String, Integer> ent : entry.getValue().entrySet()) {
+				boolean exists = false;
+				if(ent.getKey()==search[tall]){
+					tall++;
+				}
+			}
+			
+			for (Entry<String, Integer> ent : entry.getValue().entrySet()) {
+
+				double idf = Math.log(totalDoc / ni) / Math.log(2);
+				double tf = 1 + Math.log((double) ent.getValue()) / Math.log(2);
+				double result = tf * idf;
+
+				//System.out.println(tf + "   " + idf +" "+ ni  +" total doc " + totalDoc);
+			//	System.out.println( ent.getKey() + " " + entry.getKey()+ " antall " + ent.getValue());
+				
+			
+			}
+
 		}
 
 		List<Integer> sortList = new ArrayList<Integer>(docFreq.values());
@@ -182,9 +184,9 @@ public class GUI {
 
 			resultSet.add(maxEntry.getKey());
 			docFreq.remove(maxEntry.getKey());
-		
+
 		}
-			return resultSet;
+		return resultSet;
 	}
 
 	@SuppressWarnings("resource")
@@ -222,6 +224,5 @@ public class GUI {
 			}
 		});
 	}
-
 
 }
