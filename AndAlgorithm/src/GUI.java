@@ -109,9 +109,11 @@ public class GUI {
 			String document = index.getKey();
 			String[] values = index.getValue();
 			HashMap<String, Integer> tf = new HashMap<String, Integer>();
+			
 			int freq = 0;
 		
 			for (int i = 0; i < search.length; i++) {
+				termDocCounter(search[i],values);
 				for (String word : values) {
 					if (search[i].equals(word)) {
 						freq++;
@@ -223,6 +225,15 @@ public class GUI {
 				return filename.endsWith(".txt");
 			}
 		});
+	}
+	
+	public static int termDocCounter(String term, String[] doc){
+		for(int i = 0; i < doc.length;i++){
+			if(doc[i].equals(term)){
+				return 1;
+			}
+		}
+		return 0;		
 	}
 
 }
