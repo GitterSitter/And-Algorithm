@@ -29,7 +29,7 @@ public class GUI {
 	private JLabel lblResult;
 
 	public static boolean[][] check;
-	public static HashMap<String, Integer> docFreq;
+	public static HashMap<String, Double> docFreq;
 
 	/**
 	 * Launch the application.
@@ -63,7 +63,7 @@ public class GUI {
 
 		final JTextArea textArea = new JTextArea();
 		textArea.setFont(new Font("Monospaced", Font.PLAIN, 18));
-		textArea.setBounds(70, 81, 221, 213);
+		textArea.setBounds(34, 81, 321, 277);
 		textArea.setForeground(Color.WHITE);
 		textArea.setBackground(Color.DARK_GRAY);
 		textArea.setEditable(false);
@@ -81,7 +81,7 @@ public class GUI {
 				TreeMap<String, String[]> col = readFile();
 				String x = search(col, textField.getText()).toString();
 				x = x.replaceAll(",", "\n");
-				textArea.setText(x);
+				textArea.setText(x.replace("[", "").replace("]", ""));
 
 			}
 		});
@@ -95,12 +95,11 @@ public class GUI {
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 
-	public static ArrayList<String> search(TreeMap<String, String[]> col,
-			String searchParam) {
+	public static ArrayList<String> search(TreeMap<String, String[]> col,String searchParam) {
 		searchParam = searchParam.replaceAll("[^\\p{L}\\p{Nd}]+", " ");
 		searchParam = searchParam.toLowerCase();
 		String[] search = searchParam.split(" ");
-		docFreq = new HashMap<String, Integer>();
+		docFreq = new HashMap<String, Double>();
 		check = new boolean[col.size()][search.length];
 		double totalDoc = col.size();
 		int d = 0;
@@ -110,18 +109,19 @@ public class GUI {
 			String[] values = index.getValue();
 			HashMap<String, Integer> tf = new HashMap<String, Integer>();
 			
-			int freq = 0;
 		
+			
+			int freq = 0;
 			for (int i = 0; i < search.length; i++) {
-				termDocCounter(search[i],values);
 				for (String word : values) {
 					if (search[i].equals(word)) {
 						freq++;
 						check[d][i] = true;
+					//	System.out.println(check[d][i]);
 					
 					}
 				}
-				
+				/*
 				boolean notIn = false;
 				for(int j = 0; j < check[d].length;j++){
 					if (check[d][j] == false) {
@@ -131,53 +131,67 @@ public class GUI {
 				if (notIn == false) {
 					docFreq.put(document, freq);
 					tf.put(search[i], freq);
-
-				}
+					
+					
+		}
+				*/
+				//System.out.println(search[i]);
+			//	docFreq.(document, freq);
+				tf.put(search[i], freq);
 				freq = 0;
 			}
 			doc.put(document, tf);
 			d++;
 			
-		}
-
-		double ni = 0;
-		for (Entry<String, Map<String, Integer>> entry : doc.entrySet()) {
-			
-			int tall=0;
-			int[] tallet = new int[search.length];
-			for (Entry<String, Integer> ent : entry.getValue().entrySet()) {
-				boolean exists = false;
-				if(ent.getKey()==search[tall]){
-					tall++;
-				}
-			}
-			
-			for (Entry<String, Integer> ent : entry.getValue().entrySet()) {
-
-				double idf = Math.log(totalDoc / ni) / Math.log(2);
-				double tf = 1 + Math.log((double) ent.getValue()) / Math.log(2);
-				double result = tf * idf;
-
-				//System.out.println(tf + "   " + idf +" "+ ni  +" total doc " + totalDoc);
-			//	System.out.println( ent.getKey() + " " + entry.getKey()+ " antall " + ent.getValue());
 				
 			
+		}
+		HashMap<String,Integer> niList = new HashMap<String,Integer>();
+		for(int i= 0;i<search.length;i++){
+			niList.put(search[i], termDocCounter(search[i], col));
 			}
+		
+	
+		for (Entry<String, Map<String, Integer>> entry : doc.entrySet()) {
+			double weight =0;
+			String docNavn = entry.getKey();
+			System.out.println(docNavn);
+			int docs =0;
+			for (Entry<String, Integer> ent : entry.getValue().entrySet()) {
+				String term = ent.getKey();
+				int frequ = ent.getValue();
+
+				if (frequ != 0.0) {
+
+					double ni = niList.get(term);
+					double idf = Math.log(totalDoc/ni) / Math.log(2);
+					double tf = 1 + Math.log((double) ent.getValue())/ Math.log(2);
+					double result = tf * idf;
+					System.out.println(result + " " + term + " idf: " + idf);
+					
+					weight += result*result;
+					docs++;
+				}
+
+			}
+			//System.out.println(docNavn + " " + Math.sqrt(weight));
+			if(weight != 0 && docs == search.length)
+			docFreq.put(docNavn, Math.sqrt(weight));
 
 		}
 
-		List<Integer> sortList = new ArrayList<Integer>(docFreq.values());
-		Collections.sort(sortList, new Comparator<Integer>() {
+		List<Double> sortList = new ArrayList<Double>(docFreq.values());
+		Collections.sort(sortList, new Comparator<Double>() {
 			@Override
-			public int compare(Integer tall1, Integer tall2) {
-				return -(tall1 - tall2);
+			public int compare(Double tall1, Double tall2) {
+				return (int) -(tall1 - tall2);
 			}
 		});
 
 		ArrayList<String> resultSet = new ArrayList<String>();
 		while (!docFreq.isEmpty()) {
-			Map.Entry<String, Integer> maxEntry = null;
-			for (Entry<String, Integer> entry : docFreq.entrySet()) {
+			Map.Entry<String, Double> maxEntry = null;
+			for (Entry<String, Double> entry : docFreq.entrySet()) {
 				if (maxEntry == null
 						|| entry.getValue().compareTo(maxEntry.getValue()) > 0) {
 					maxEntry = entry;
@@ -226,14 +240,25 @@ public class GUI {
 			}
 		});
 	}
-	
-	public static int termDocCounter(String term, String[] doc){
-		for(int i = 0; i < doc.length;i++){
-			if(doc[i].equals(term)){
-				return 1;
-			}
-		}
-		return 0;		
-	}
 
+	public static int termDocCounter(String term, TreeMap<String, String[]> coll) {
+		int antDocs = 0;
+		
+
+		for (Entry<String, String[]> index : coll.entrySet()) {
+			String[] values = index.getValue();
+
+			for (String word : values) {
+				if (term.equals(word)) {
+					antDocs++;
+					break;
+				}
+
+			}
+
+		}
+
+		return antDocs;
+}
+	
 }
